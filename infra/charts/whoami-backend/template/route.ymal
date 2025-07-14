@@ -1,0 +1,44 @@
+{{- if ne .Values.cron "Y" }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  {{- if eq .Values.cron "Y" }}
+  name: whoami-backend-cron
+  {{- else if eq .Values.cron "N" }}
+  name: whoami-backend
+  {{- else }}
+  name: whoami-backend-{{ .Values.cron }}
+  {{- end }}
+  namespace: applications
+  labels:
+    app: whoami
+    side: backend
+    managed-by: helm
+    chart: whoami-backend
+    release: whoami-backend
+    heritage: Helm
+spec:
+  parentRefs:
+    - name: cilium-gateway
+      namespace: network
+  hostnames:
+    - back.whoami.dev
+    - back.karolayne.com
+  rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /
+        timeouts:
+          request: 3600s
+      backendRefs:
+      - {{- if eq .Values.cron "Y" }}
+        name: whoami-backend-cron
+        {{- else if eq .Values.cron "N" }}
+        name: whoami-backend
+        {{- else }}
+        name: whoami-backend-{{ .Values.cron }}
+        {{- end }}
+        namespace: applications
+        port: 8080
+{{- end }}

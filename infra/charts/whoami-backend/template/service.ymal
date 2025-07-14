@@ -1,0 +1,25 @@
+{{- if ne .Values.cron "Y" }}
+apiVersion: v1
+kind: Service
+metadata:
+  {{- if eq .Values.cron "Y" }}
+  name: whoami-backend-cron
+  {{- else if eq .Values.cron "N" }}
+  name: whoami-backend
+  {{- else }}
+  name: whoami-backend-{{ .Values.cron }}
+  {{- end }}
+  labels:
+    app: whoami
+    side: backend
+    managed-by: helm
+spec:
+  selector:
+    app: whoami
+    side: backend
+  type: ClusterIP
+  ports:
+    - name: http
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+{{- end }}

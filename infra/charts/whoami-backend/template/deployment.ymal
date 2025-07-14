@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{- if eq .Values.cron "Y" }}
+  name: whoami-backend-cron
+  {{- else if eq .Values.cron "N" }}
+  name: whoami-backend
+  {{- else }}
+  name: whoami-backend-{{ .Values.cron }}
+  {{- end }}
+  labels:
+    app: whoami
+    side: backend
+    managed-by: helm
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: whoami
+      side: backend
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: whoami
+        side: backend
+        managed-by: helm
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: whoami-backend
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.port }}
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.nodeEnv }}
+            - name: CRON
+              value: {{ .Values.cron | quote }}
+            
+            # ========================================
+            # APPLICATION CONFIGURATION
+            # ========================================
+            - name: AAI_KEY
+              value: {{ .Values.app.aai_key | quote }}
+            - name: WHOAMI_URI
+              value: {{ .Values.app.whoami | quote }}
+            - name: INTEGRATIONS_URI
+              value: {{ .Values.app.integrations_uri | quote }}
+            - name: JWT_SECRET
+              value: {{ .Values.app.jwt_secret | quote }}
+            - name: MAIN_PASS
+              value: {{ .Values.app.main_pass | quote }}
+            - name: MAKE_URI
+              value: {{ .Values.app.make_uri | quote }}
+            - name: PORT
+              value: {{ .Values.app.port | quote }}
+            
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          volumeMounts:
+            - name: whoami-backend{{- if eq .Values.cron "Y" }}-cron{{- end }}
+              mountPath: /data
+      volumes:
+        - name: whoami-backend{{- if eq .Values.cron "Y" }}-cron{{- end }}
+          persistentVolumeClaim:
+            claimName: whoami-backend{{- if eq .Values.cron "Y" }}-cron{{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

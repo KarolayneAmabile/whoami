@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  {{- if eq .Values.cron "Y" }}
+  name: whoami-backend-cron-{{ .Values.environment }}
+  {{- else if eq .Values.cron "N" }}
+  name: whoami-backend-{{ .Values.environment }}
+  {{- else }}
+  name: whoami-backend-{{ .Values.cron }}-{{ .Values.environment }}
+  {{- end }}
+  labels:
+    app: whoami
+    side: backend
+    managed-by: helm
+spec:
+  capacity:
+    storage: 10Gi 
+  accessModes:
+    - ReadWriteOnce 
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: gp2
+  hostPath:
+    path: "/mnt/data" 
