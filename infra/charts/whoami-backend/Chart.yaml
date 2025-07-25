@@ -2,6 +2,8 @@ apiVersion: v2
 name: whoami-backend
 description: A Helm chart for Whoami-Backend
 
+#hello world
+
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
