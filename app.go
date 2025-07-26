@@ -75,8 +75,6 @@ type Data struct {
 func main() {
 	flag.Parse()
 
-	fmt.Println("Hello world!")
-
 	mux := http.NewServeMux()
 	mux.Handle("/data", handle(dataHandler, verbose))
 	mux.Handle("/echo", handle(echoHandler, verbose))
@@ -222,6 +220,8 @@ func dataHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func whoamiHandler(w http.ResponseWriter, r *http.Request) {
+	 _, _ = fmt.Fprintln(w, "hello")
+	
 	queryParams := r.URL.Query()
 
 	wait := queryParams.Get("wait")
