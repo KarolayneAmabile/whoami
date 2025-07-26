@@ -7,7 +7,7 @@ replicaCount: 1
 
 image:
 
-  repository: ghcr.io/traefik/whoami
+  repository: ghcr.io/karolayneamabile/whoami:main
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart AppVersion.
   tag: "v1.10.3"
