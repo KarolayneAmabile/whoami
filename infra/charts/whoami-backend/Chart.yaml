@@ -2,7 +2,7 @@ apiVersion: v2
 name: whoami-backend
 description: A Helm chart for Whoami-Backend
 
-#hello world
+# hello world
 
 # A chart can be either an 'application' or a 'library' chart.
 #
